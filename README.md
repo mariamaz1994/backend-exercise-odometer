@@ -79,15 +79,51 @@ If your chosen approach requires credentials:
 
 ---
 
-## Test Images
+## Setup and running the service
 
-A set of odometer images is included in the `/images` folder of the base repository.
-
-Clone the repository to get started:
+You need Node.js 20.3 or newer and npm. Clone the repository, install dependencies, and start the service:
 
 ```bash
 git clone https://github.com/just-insure/backend-exercise-odometer.git
+cd backend-exercise-odometer
+npm install
+npm run dev
 ```
+
+The development server listens on port `3000` by default. Set `PORT` to use a different port.
+
+Without `ANTHROPIC_API_KEY`, the service uses `MockReader` and returns fixture-backed answers for the four supplied sample images. Unknown images fail explicitly rather than receiving a guessed reading.
+
+To use Claude, set `ANTHROPIC_API_KEY` before starting the service. The default model is `claude-sonnet-5-5`; set `ANTHROPIC_MODEL` to use another model available to your Anthropic account. The selected reader is logged at startup. The API key and image data are never logged.
+
+### Send a sample image
+
+The endpoint accepts a base64-encoded JPEG or PNG in a JSON request. In PowerShell, start the server in one terminal, then send one of the supplied fixtures from the repository root in another:
+
+```powershell
+$image = [Convert]::ToBase64String([IO.File]::ReadAllBytes("images/3ae9d173-8895-409e-844c-77b5841138d7.jpeg"))
+$body = @{ image = $image; mediaType = "image/jpeg" } | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:3000/odometer/reading" -Method Post -ContentType "application/json" -Body $body
+```
+
+The response contains `reading`, `unit`, and `confidence`. In mock mode the response reading is resolved from the fixture image's SHA-256 hash.
+
+### Run checks
+
+Run tests and the TypeScript check with:
+
+```bash
+npm test
+npm run typecheck
+npm run test:integration
+```
+### Claude conversation
+
+Link: https://claude.ai/share/1302b6d9-055b-4dab-8187-486b0c6ac764
+
+## Test Images
+
+A set of odometer images is included in the `/images` folder of the base repository.
 
 ---
 
